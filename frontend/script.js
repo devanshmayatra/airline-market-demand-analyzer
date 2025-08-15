@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://airline-market-demand-analyzer-api.onrender.com/";
+const API_BASE_URL = "https://airline-market-demand-analyzer-api.onrender.com";
 
 const analyzeBtn = document.getElementById('analyzeBtn');
 const originInput = document.getElementById('origin');
