@@ -2,8 +2,8 @@
 
 **Live Demo:** [**https://airline-market-demand-analyzer-beta.vercel.app/**](https://airline-market-demand-analyzer-beta.vercel.app/)
 
-![Application Screenshot](.assets/insignts.png)
-![Application Screenshot](.assets/data-table.png)
+![Application Screenshot](./assets/insights.png)
+![Application Screenshot](./assets/data-table.png)
 
 ## Overview
 
