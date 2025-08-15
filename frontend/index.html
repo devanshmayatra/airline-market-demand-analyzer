@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Airline Market Demand Analyzer</title>
+
+    <!-- Google Fonts Link -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <header class="app-header">
+        <h1>Airline Market Demand Analyzer</h1>
+        <p>
+          Analyze flight data for Australian routes to understand market trends.
+        </p>
+      </header>
+
+      <div class="card controls-card">
+        <div class="controls">
+          <div class="control-group">
+            <label for="origin">Origin</label>
+            <input type="text" id="origin" value="SYD" />
+          </div>
+          <div class="control-group">
+            <label for="destination">Destination</label>
+            <input type="text" id="destination" value="MEL" />
+          </div>
+          <div class="control-group">
+            <label for="dataSource">Data Source</label>
+            <select id="dataSource">
+              <option value="api">Amadeus API</option>
+              <option value="scraper">Web Scraper</option>
+            </select>
+          </div>
+          <button id="analyzeBtn">Analyze Route</button>
+        </div>
+      </div>
+
+      <div id="loading" class="hidden">
+        <div class="spinner"></div>
+        <p>Analyzing data... This may take a moment.</p>
+      </div>
+
+      <div id="results" class="hidden">
+        <div class="card insights-container">
+          <h2>AI-Powered Insights</h2>
+          <div id="insights"></div>
+        </div>
+
+        <div class="card chart-container">
+          <h2>Price Trends (Next ~180 Days)</h2>
+          <canvas id="trendsChart"></canvas>
+        </div>
+
+        <div class="card table-container">
+          <h2>Current Market Offers</h2>
+          <table id="offersTable">
+            <thead>
+              <tr>
+                <th>Airline</th>
+                <th>Price (AUD)</th>
+                <th>Departure</th>
+                <th>Arrival</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
