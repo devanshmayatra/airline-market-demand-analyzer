@@ -1,4 +1,3 @@
-# main.py (EDITED TO INCLUDE WEB SCRAPER OPTION)
 import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,15 +5,12 @@ from dotenv import load_dotenv
 import requests
 import json
 from groq import Groq
-from serpapi import GoogleSearch # <-- NEW: Import the scraper library
+from serpapi import GoogleSearch
 
-# Load environment variables from .env file
 load_dotenv()
 
-# Initialize FastAPI app
 app = FastAPI()
 
-# --- CORS Middleware ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -23,7 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- API Configurations ---
+# Constants
 AMADEUS_API_KEY = os.getenv("AMADEUS_API_KEY")
 AMADEUS_SECRET_KEY = os.getenv("AMADEUS_SECRET_KEY") # <-- Preserving your variable name
 AMADEUS_TOKEN_URL = "https://test.api.amadeus.com/v1/security/oauth2/token"
@@ -31,7 +27,7 @@ AMADEUS_API_BASE_URL = "https://test.api.amadeus.com/v2"
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY") # <-- NEW: Get scraper API key
 
-# --- Helper Function: Get Amadeus Access Token ---
+# Get Tokens
 def get_amadeus_token():
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
     data = {
@@ -47,9 +43,8 @@ def get_amadeus_token():
         error_detail = f"Failed to authenticate with Amadeus API. Response: {e.response.text if e.response else 'No response'}"
         raise HTTPException(status_code=500, detail=error_detail)
 
-# --- NEW: Function to get data from Amadeus API ---
+# Get Data Fom Amadeus API
 def get_amadeus_data(origin: str, destination: str):
-    # This is your previous, resilient logic, now in its own function
     try:
         token = get_amadeus_token()
         headers = {"Authorization": f"Bearer {token}"}
@@ -81,7 +76,7 @@ def get_amadeus_data(origin: str, destination: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred with the Amadeus API: {str(e)}")
 
-# --- NEW: Function to get data from Web Scraper ---
+# WEB SCRAPER
 def scrape_flight_data(origin: str, destination: str):
     try:
         params = {
@@ -105,8 +100,6 @@ def scrape_flight_data(origin: str, destination: str):
 
         processed_offers = []
         for flight_offer in results.get('best_flights', []):
-            # THE FIX: Data is often nested in a 'flights' array.
-            # We assume the first flight in the list represents the offer.
             if 'flights' in flight_offer and flight_offer['flights']:
                 main_flight = flight_offer['flights'][0]
                 processed_offers.append({
@@ -120,23 +113,21 @@ def scrape_flight_data(origin: str, destination: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred with the Web Scraper: {str(e)}")
 
-# --- API Endpoints ---
+# API Endpoints
 @app.get("/")
 def read_root():
     return {"message": "Airline Market Analyzer API is running."}
 
-# --- MODIFIED: The main endpoint now chooses the data source ---
 @app.get("/api/analyze-route")
 def analyze_route(origin: str, destination: str, source: str = 'api'):
     print(f"Received request for {origin}->{destination} using source: {source}")
     if source == 'scraper':
         return scrape_flight_data(origin, destination)
-    else: # Default to the API
+    else:
         return get_amadeus_data(origin, destination)
 
 @app.post("/api/generate-insights")
 def generate_insights(data: dict):
-    # This function requires no changes, as it works with our standardized data format.
     simplified_data = {"current_offers": data.get("offers", []), "price_trends_next_months": data.get("trends", [])}
     prompt = f"""
     You are a market analyst for a chain of youth hostels in Australia... (prompt unchanged)
