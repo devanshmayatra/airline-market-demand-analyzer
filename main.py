@@ -50,7 +50,7 @@ def get_amadeus_data(origin: str, destination: str):
         headers = {"Authorization": f"Bearer {token}"}
         
         offers_url = f"{AMADEUS_API_BASE_URL}/shopping/flight-offers"
-        offers_params = {"originLocationCode": origin, "destinationLocationCode": destination, "departureDate": "2025-11-20", "adults": 1, "max": 15, "currencyCode": "INR"}
+        offers_params = {"originLocationCode": origin, "destinationLocationCode": destination, "departureDate": "2025-11-20", "adults": 1, "max": 15, "currencyCode": "AUD"}
         offers_response = requests.get(offers_url, headers=headers, params=offers_params)
         offers_response.raise_for_status()
         offers_data = offers_response.json()
@@ -58,7 +58,7 @@ def get_amadeus_data(origin: str, destination: str):
         cheapest_data = {}
         try:
             cheapest_date_url = f"https://test.api.amadeus.com/v1/shopping/flight-cheapest-date-search"
-            cheapest_params = {"origin": origin, "destination": destination, "currencyCode": "INR"}
+            cheapest_params = {"origin": origin, "destination": destination, "currencyCode": "AUD"}
             cheapest_response = requests.get(cheapest_date_url, headers=headers, params=cheapest_params)
             cheapest_response.raise_for_status()
             cheapest_data = cheapest_response.json()

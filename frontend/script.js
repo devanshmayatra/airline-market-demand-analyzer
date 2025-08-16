@@ -78,7 +78,7 @@ function renderOffersTable(offers) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${offer.airline}</td>
-            <td>₹${offer.price.toFixed(2)}</td>
+            <td>$${offer.price.toFixed(2)}</td>
             <td>${offer.departure}</td>
             <td>${offer.arrival}</td>
         `;
