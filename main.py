@@ -21,11 +21,11 @@ app.add_middleware(
 
 # Constants
 AMADEUS_API_KEY = os.getenv("AMADEUS_API_KEY")
-AMADEUS_SECRET_KEY = os.getenv("AMADEUS_SECRET_KEY") # <-- Preserving your variable name
+AMADEUS_SECRET_KEY = os.getenv("AMADEUS_SECRET_KEY")
 AMADEUS_TOKEN_URL = "https://test.api.amadeus.com/v1/security/oauth2/token"
 AMADEUS_API_BASE_URL = "https://test.api.amadeus.com/v2"
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY") # <-- NEW: Get scraper API key
+SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
 
 # Get Tokens
 def get_amadeus_token():
@@ -33,7 +33,7 @@ def get_amadeus_token():
     data = {
         "grant_type": "client_credentials",
         "client_id": AMADEUS_API_KEY,
-        "client_secret": AMADEUS_SECRET_KEY, # <-- Using your variable name
+        "client_secret": AMADEUS_SECRET_KEY,
     }
     try:
         response = requests.post(AMADEUS_TOKEN_URL, headers=headers, data=data)
@@ -50,15 +50,15 @@ def get_amadeus_data(origin: str, destination: str):
         headers = {"Authorization": f"Bearer {token}"}
         
         offers_url = f"{AMADEUS_API_BASE_URL}/shopping/flight-offers"
-        offers_params = {"originLocationCode": origin, "destinationLocationCode": destination, "departureDate": "2025-11-20", "adults": 1, "max": 15, "currencyCode": "AUD"}
+        offers_params = {"originLocationCode": origin, "destinationLocationCode": destination, "departureDate": "2025-11-20", "adults": 1, "max": 15, "currencyCode": "INR"}
         offers_response = requests.get(offers_url, headers=headers, params=offers_params)
         offers_response.raise_for_status()
         offers_data = offers_response.json()
 
         cheapest_data = {}
         try:
-            cheapest_date_url = f"https://test.api.amadeus.com/v1/shopping/flight-dates"
-            cheapest_params = {"origin": origin, "destination": destination, "currencyCode": "AUD"}
+            cheapest_date_url = f"https://test.api.amadeus.com/v1/shopping/flight-cheapest-date-search"
+            cheapest_params = {"origin": origin, "destination": destination, "currencyCode": "INR"}
             cheapest_response = requests.get(cheapest_date_url, headers=headers, params=cheapest_params)
             cheapest_response.raise_for_status()
             cheapest_data = cheapest_response.json()
