@@ -57,7 +57,6 @@ analyzeBtn.addEventListener('click', async () => {
             const insightsData = await insightsResponse.json();
             insightsDiv.innerText = insightsData.insights;
         }
-        // -------------------------
 
         resultsDiv.classList.remove('hidden');
 
@@ -69,21 +68,17 @@ analyzeBtn.addEventListener('click', async () => {
     }
 });
 
-// In frontend/script.js, replace the renderOffersTable function
-
 function renderOffersTable(offers) {
-    offersTableBody.innerHTML = ''; // Clear previous results
+    offersTableBody.innerHTML = '';
     if (!offers || offers.length === 0) {
         offersTableBody.innerHTML = '<tr><td colspan="4">No current offers found.</td></tr>';
         return;
     }
     offers.forEach(offer => {
         const row = document.createElement('tr');
-        // THE FIX: Directly display the date strings from the backend.
-        // This is more robust and avoids JavaScript parsing errors.
         row.innerHTML = `
             <td>${offer.airline}</td>
-            <td>$${offer.price.toFixed(2)}</td>
+            <td>₹${offer.price.toFixed(2)}</td>
             <td>${offer.departure}</td>
             <td>${offer.arrival}</td>
         `;
@@ -92,10 +87,10 @@ function renderOffersTable(offers) {
 }
 
 function renderTrendsChart(trends) {
-    const chartContainer = document.querySelector('.chart-container'); // Get the container div
+    const chartContainer = document.querySelector('.chart-container');
 
     if (trendsChartInstance) {
-        trendsChartInstance.destroy(); // Destroy old chart before creating a new one
+        trendsChartInstance.destroy(); 
     }
 
     // If there is no trend data, hide the entire chart section and stop.
