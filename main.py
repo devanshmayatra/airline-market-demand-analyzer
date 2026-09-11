@@ -6,6 +6,7 @@ import requests
 import json
 from groq import Groq
 from serpapi import GoogleSearch
+from fastapi.staticfiles import StaticFiles
 
 load_dotenv()
 
@@ -41,6 +42,7 @@ def get_amadeus_token():
         return response.json()["access_token"]
     except requests.exceptions.RequestException as e:
         error_detail = f"Failed to authenticate with Amadeus API. Response: {e.response.text if e.response else 'No response'}"
+        print(f"ERROR: cl${error_detail}")
         raise HTTPException(status_code=500, detail=error_detail)
 
 # Get Data Fom Amadeus API
@@ -140,3 +142,6 @@ def generate_insights(data: dict):
         return {"insights": chat_completion.choices[0].message.content}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate insights: {str(e)}")
+
+
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
