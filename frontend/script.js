@@ -4,6 +4,7 @@ const API_BASE_URL = "http://127.0.0.1:8001";
 const analyzeBtn = document.getElementById('analyzeBtn');
 const originInput = document.getElementById('origin');
 const destinationInput = document.getElementById('destination');
+const dateInput = document.getElementById('date');
 const loadingDiv = document.getElementById('loading');
 const resultsDiv = document.getElementById('results');
 const insightsDiv = document.getElementById('insights');
@@ -14,7 +15,11 @@ let trendsChartInstance = null; // To hold the chart instance
 analyzeBtn.addEventListener('click', async () => {
     const origin = originInput.value.trim();
     const destination = destinationInput.value.trim();
-    const source = document.getElementById('dataSource').value;
+    const source = "scraper"
+    const date = dateInput.value.trim()
+
+    // const today = new Date().toISOString().split('T')[0];
+    // const selectedDate = dateValue || today;
 
     if (!origin || !destination) {
         alert('Please enter both origin and destination.');
@@ -27,7 +32,7 @@ analyzeBtn.addEventListener('click', async () => {
     offersTableBody.innerHTML = '';
 
     try {
-        const analyzeUrl = `${API_BASE_URL}/api/analyze-route?origin=${origin}&destination=${destination}&source=${source}`;
+        const analyzeUrl = `${API_BASE_URL}/api/analyze-route?origin=${origin}&destination=${destination}&source=${source}&date=${date}`;
         
         const response = await fetch(analyzeUrl);
         if (!response.ok) {

@@ -34,11 +34,12 @@
             <input type="text" id="destination" value="MEL" />
           </div>
           <div class="control-group">
+            <label for="date">Date</label>
+            <input type="date" id="date"/>
+          </div>
+          <div class="control-group">
             <label for="dataSource">Data Source</label>
-            <select id="dataSource">
-              <option value="api">Amadeus API</option>
-              <option value="scraper">Web Scraper</option>
-            </select>
+              <div id="dataSourceValue" >Web Scraper</div>
           </div>
           <button id="analyzeBtn">Analyze Route</button>
         </div>
@@ -66,7 +67,7 @@
             <thead>
               <tr>
                 <th>Airline</th>
-                <th>Price (AUD)</th>
+                <th>Price (USD)</th>
                 <th>Departure</th>
                 <th>Arrival</th>
               </tr>

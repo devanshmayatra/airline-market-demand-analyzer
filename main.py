@@ -7,6 +7,7 @@ import json
 from groq import Groq
 from serpapi import GoogleSearch
 from fastapi.staticfiles import StaticFiles
+from datetime import date
 
 load_dotenv()
 
@@ -21,72 +22,18 @@ app.add_middleware(
 )
 
 # Constants
-AMADEUS_API_KEY = os.getenv("AMADEUS_API_KEY")
-AMADEUS_SECRET_KEY = os.getenv("AMADEUS_SECRET_KEY")
-AMADEUS_TOKEN_URL = "https://test.api.amadeus.com/v1/security/oauth2/token"
-AMADEUS_API_BASE_URL = "https://test.api.amadeus.com/v2"
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
 
-# Get Tokens
-def get_amadeus_token():
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
-    data = {
-        "grant_type": "client_credentials",
-        "client_id": AMADEUS_API_KEY,
-        "client_secret": AMADEUS_SECRET_KEY,
-    }
-    try:
-        response = requests.post(AMADEUS_TOKEN_URL, headers=headers, data=data)
-        response.raise_for_status()
-        return response.json()["access_token"]
-    except requests.exceptions.RequestException as e:
-        error_detail = f"Failed to authenticate with Amadeus API. Response: {e.response.text if e.response else 'No response'}"
-        print(f"ERROR: cl${error_detail}")
-        raise HTTPException(status_code=500, detail=error_detail)
-
-# Get Data Fom Amadeus API
-def get_amadeus_data(origin: str, destination: str):
-    try:
-        token = get_amadeus_token()
-        headers = {"Authorization": f"Bearer {token}"}
-        
-        offers_url = f"{AMADEUS_API_BASE_URL}/shopping/flight-offers"
-        offers_params = {"originLocationCode": origin, "destinationLocationCode": destination, "departureDate": "2025-11-20", "adults": 1, "max": 15, "currencyCode": "AUD"}
-        offers_response = requests.get(offers_url, headers=headers, params=offers_params)
-        offers_response.raise_for_status()
-        offers_data = offers_response.json()
-
-        cheapest_data = {}
-        try:
-            cheapest_date_url = f"https://test.api.amadeus.com/v1/shopping/flight-cheapest-date-search"
-            cheapest_params = {"origin": origin, "destination": destination, "currencyCode": "AUD"}
-            cheapest_response = requests.get(cheapest_date_url, headers=headers, params=cheapest_params)
-            cheapest_response.raise_for_status()
-            cheapest_data = cheapest_response.json()
-        except requests.exceptions.HTTPError as e:
-            print(f"!!! WARNING: Amadeus Cheapest Date Search API failed. Proceeding without trend data. !!!")
-
-        processed_offers = []
-        if 'data' in offers_data and offers_data['data']:
-            dictionaries = offers_data.get('dictionaries', {})
-            for offer in offers_data['data']:
-                carrier_code = offer['itineraries'][0]['segments'][0]['carrierCode']
-                processed_offers.append({"airline": dictionaries.get('carriers', {}).get(carrier_code, carrier_code), "price": float(offer['price']['total']), "departure": offer['itineraries'][0]['segments'][0]['departure']['at'], "arrival": offer['itineraries'][0]['segments'][-1]['arrival']['at']})
-        
-        return {"offers": processed_offers, "trends": cheapest_data.get('data', [])}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred with the Amadeus API: {str(e)}")
-
 # WEB SCRAPER
-def scrape_flight_data(origin: str, destination: str):
+def scrape_flight_data(origin: str, destination: str, date:str):
     try:
         params = {
             "api_key": SERPAPI_API_KEY,
             "engine": "google_flights",
             "departure_id": origin,
             "arrival_id": destination,
-            "outbound_date": "2025-09-16",
+            "outbound_date": date,
             "type": "2",
             "currency": "AUD",
             "hl": "en"
@@ -110,35 +57,40 @@ def scrape_flight_data(origin: str, destination: str):
                     "departure": f"{main_flight.get('departure_airport', {}).get('time', 'N/A')}",
                     "arrival": f"{main_flight.get('arrival_airport', {}).get('time', 'N/A')}"
                 })
-        
+        print(processed_offers)
         return {"offers": processed_offers, "trends": []}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred with the Web Scraper: {str(e)}")
 
 # API Endpoints
-@app.get("/")
+@app.get("/api/status")
 def read_root():
     return {"message": "Airline Market Analyzer API is running."}
 
 @app.get("/api/analyze-route")
-def analyze_route(origin: str, destination: str, source: str = 'api'):
-    print(f"Received request for {origin}->{destination} using source: {source}")
-    if source == 'scraper':
-        return scrape_flight_data(origin, destination)
-    else:
-        return get_amadeus_data(origin, destination)
+def analyze_route(origin: str, destination: str, source: str = 'api', date: str = None):
+    print(f"Received request for {origin}->{destination} using source: {source} date: {date}")
+
+    return scrape_flight_data(origin, destination, date)
+
 
 @app.post("/api/generate-insights")
 def generate_insights(data: dict):
     simplified_data = {"current_offers": data.get("offers", []), "price_trends_next_months": data.get("trends", [])}
     prompt = f"""
-    You are a market analyst for a chain of youth hostels in Australia... (prompt unchanged)
-    Data: {json.dumps(simplified_data)}
-    Provide only the bullet-point summary. Be clear and actionable.
+        You are an expert airline market analyst. Analyze the following flight data and market trends to deliver a concise, actionable summary of current flight offers.
+
+        Flight Data:
+        {json.dumps(simplified_data, indent=2)}
+
+        Guidelines:
+        - Output only bullet points.
+        - Highlight the cheapest option, best departure times, and price competitiveness.
+        - Keep recommendations clear, direct, and actionable for a traveler.
     """
     try:
         client = Groq(api_key=GROQ_API_KEY)
-        chat_completion = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama3-8b-8192")
+        chat_completion = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="groq/compound")
         return {"insights": chat_completion.choices[0].message.content}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate insights: {str(e)}")
