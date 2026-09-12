@@ -116,4 +116,4 @@ def generate_insights(data: dict):
         raise HTTPException(status_code=500, detail=f"Failed to generate insights: {str(e)}")
 
 
-app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+# app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
