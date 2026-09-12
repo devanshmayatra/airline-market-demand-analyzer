@@ -33,7 +33,7 @@ analyzeBtn.addEventListener('click', async () => {
 
     try {
         const analyzeUrl = `${API_BASE_URL}/api/analyze-route?origin=${origin}&destination=${destination}&source=${source}&date=${date}`;
-        
+
         const response = await fetch(analyzeUrl);
         if (!response.ok) {
             const errorData = await response.json();
@@ -60,8 +60,30 @@ analyzeBtn.addEventListener('click', async () => {
                 const errorData = await insightsResponse.json();
                 throw new Error(errorData.detail || 'Failed to generate insights');
             }
+
             const insightsData = await insightsResponse.json();
-            insightsDiv.innerText = insightsData.insights;
+            const rawInsights = insightsData.insights;
+
+            const lines = rawInsights.trim().split('\n');
+            const listItems = [];
+
+            for (let line of lines) {
+                const cleaned = line.trim();
+                if (!cleaned) continue;
+
+                // Remove leading bullet markers
+                let content = cleaned.replace(/^[-*•]\s*/, '');
+
+                // Replace all occurrences of **text** with <strong>text</strong> globally
+                content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                // Clean up any remaining stray double asterisks
+                content = content.replace(/\*\*/g, '');
+
+                listItems.push(`<li>${content}</li>`);
+            }
+
+            insightsDiv.innerHTML = listItems.length > 0 ? `<ul>${listItems.join('')}</ul>` : `<p>${rawInsights}</p>`;
         }
 
         resultsDiv.classList.remove('hidden');
@@ -87,6 +109,7 @@ function renderOffersTable(offers) {
             <td>$${offer.price.toFixed(2)}</td>
             <td>${offer.departure}</td>
             <td>${offer.arrival}</td>
+            <td>${offer.travel_class}</td>
         `;
         offersTableBody.appendChild(row);
     });
@@ -96,7 +119,7 @@ function renderTrendsChart(trends) {
     const chartContainer = document.querySelector('.chart-container');
 
     if (trendsChartInstance) {
-        trendsChartInstance.destroy(); 
+        trendsChartInstance.destroy();
     }
 
     // If there is no trend data, hide the entire chart section and stop.

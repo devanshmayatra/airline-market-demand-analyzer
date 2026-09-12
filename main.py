@@ -2,12 +2,11 @@ import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-import requests
 import json
 from groq import Groq
 from serpapi import GoogleSearch
 from fastapi.staticfiles import StaticFiles
-from datetime import date
+import re
 
 load_dotenv()
 
@@ -20,6 +19,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+AIRLINE_SEARCH_URLS = {
+    "United": "https://www.united.com",
+    "Delta": "https://www.delta.com",
+    "Air France": "https://www.airfrance.us",
+    "Etihad": "https://www.etihad.com",
+    "Virgin Atlantic": "https://www.virginatlantic.com",
+    "Lufthansa": "https://www.lufthansa.com",
+}
 
 # Constants
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
@@ -35,12 +43,12 @@ def scrape_flight_data(origin: str, destination: str, date:str):
             "arrival_id": destination,
             "outbound_date": date,
             "type": "2",
-            "currency": "AUD",
+            "currency": "USD",
             "hl": "en"
         }
         search = GoogleSearch(params)
         results = search.get_dict()
-
+                
         if 'error' in results:
             print(f"!!! SERPAPI ERROR: {results['error']} !!!")
         
@@ -55,9 +63,9 @@ def scrape_flight_data(origin: str, destination: str, date:str):
                     "airline": main_flight.get('airline', 'N/A'),
                     "price": float(flight_offer.get('price', 0)),
                     "departure": f"{main_flight.get('departure_airport', {}).get('time', 'N/A')}",
-                    "arrival": f"{main_flight.get('arrival_airport', {}).get('time', 'N/A')}"
+                    "arrival": f"{main_flight.get('arrival_airport', {}).get('time', 'N/A')}",
+                    "travel_class":main_flight.get('travel_class','N/A')
                 })
-        print(processed_offers)
         return {"offers": processed_offers, "trends": []}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred with the Web Scraper: {str(e)}")
@@ -76,22 +84,34 @@ def analyze_route(origin: str, destination: str, source: str = 'api', date: str 
 
 @app.post("/api/generate-insights")
 def generate_insights(data: dict):
-    simplified_data = {"current_offers": data.get("offers", []), "price_trends_next_months": data.get("trends", [])}
+    simplified_data = {
+        "origin": data.get("origin"),
+        "destination": data.get("destination"),
+        "current_offers": data.get("offers", []),
+        "price_trends_sample": data.get("trends", [])[:10]
+    }
+    
     prompt = f"""
-        You are an expert airline market analyst. Analyze the following flight data and market trends to deliver a concise, actionable summary of current flight offers.
+    You are an expert airline market analyst. Analyze the following flight data and market trends to deliver a concise, actionable summary of current flight offers.
 
-        Flight Data:
-        {json.dumps(simplified_data, indent=2)}
+    Flight Data:
+    {json.dumps(simplified_data, indent=2)}
 
-        Guidelines:
-        - Output only bullet points.
-        - Highlight the cheapest option, best departure times, and price competitiveness.
-        - Keep recommendations clear, direct, and actionable for a traveler.
+    Guidelines:
+    - Output only bullet points.
+    - Highlight the cheapest option, best departure times, and price competitiveness.
+    - Keep recommendations clear, direct, and actionable for a traveler.
     """
+    
     try:
         client = Groq(api_key=GROQ_API_KEY)
-        chat_completion = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="groq/compound")
+        chat_completion = client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}], 
+            model="groq/compound"
+        )
+        
         return {"insights": chat_completion.choices[0].message.content}
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate insights: {str(e)}")
 
