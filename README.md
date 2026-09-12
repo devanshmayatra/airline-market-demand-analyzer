@@ -7,100 +7,101 @@
 
 ## Overview
 
-This project is a full-stack web application designed for a group of hostels in Australia to analyze market demand trends in the airline industry. It provides actionable insights by fetching and processing flight data from multiple sources, helping non-technical users make informed decisions about pricing, promotions, and staffing during peak travel periods.
+This project is a full-stack web application designed to analyze real-time market demand and pricing trends across global airline routes. It provides actionable market intelligence by aggregating live flight offers via SerpApi (Google Flights) and generating analyst-grade AI summaries using Groq (Llama 3.1). Non-technical stakeholders and travel operators can rapidly assess competitive pricing, peak departure windows, and route viability.
 
-The application was built as part of a skills assessment to demonstrate proficiency in Python, API integration, web scraping, and modern full-stack development practices, with a focus on delivering a robust and user-friendly tool under a tight deadline.
+The application emphasizes production resilience, payload optimization, and clean data pipelines to deliver an intuitive, responsive user experience.
 
 ## Core Features
 
--   🚀 **Multi-Source Data Aggregation:** Users can choose to fetch data from two distinct sources:
-    -   **Amadeus API:** A reliable, industry-standard API for real-time flight offer data.
-    -   **Web Scraper:** A resilient fallback that scrapes Google Flights (via SerpApi) to ensure data availability even if the primary API is down.
--   🧠 **AI-Powered Insights:** Fetched data is sent to a Large Language Model (Groq/Llama 3) with a carefully engineered prompt. The AI acts as a market analyst, generating a concise, bullet-point summary of key trends, competitive pricing, and actionable recommendations for the hostel managers.
--   📊 **Data Visualization:** The application displays price trends over time using Chart.js, providing a clear, visual representation of high and low-demand periods.
--   🛡️ **Resilient & Robust:** The application is built with graceful degradation in mind. It can handle API failures, empty data states, and malformed responses without crashing, ensuring a smooth user experience.
--   🎨 **Modern Frontend:** A clean, responsive, and intuitive user interface built with modern CSS and a card-based design for a professional look and feel.
+- 🚀 **Real-Time Flight Aggregation:** Scrapes live Google Flights data via SerpApi to deliver current market offers, flight durations, departure/arrival schedules, and travel class details.
+- 🧠 **AI-Powered Market Insights:** Processes extracted flight offers with Groq (Llama 3.1 8B) to generate actionable bullet-point summaries identifying lowest fares, optimal departure slots, and route price competitiveness.
+- 📊 **Trend Visualization:** Visualizes forward-looking price trajectory over time using Chart.js to highlight high- and low-demand booking windows.
+- 🛡️ **Defensive Engineering & Payload Trimming:** Prevents payload overflow (`413 Request Entity Too Large`) through backend trend downsampling, prevents AI hallucinations via frontend empty-state guard clauses, and normalizes nested data structures reliably.
+- 🎨 **Modern Interface:** A clean, responsive UI built with modern CSS variables, accessible card layouts, dynamic HTML parsing for LLM outputs, and real-time state feedback.
 
 ## Tech Stack
 
-| Category         | Technology                                                                                                  |
-| ---------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Frontend**     | `HTML5`, `CSS3`, `Vanilla JavaScript (ES6+)`, `Chart.js`                                                     |
-| **Backend**      | `Python 3`, `FastAPI`, `Uvicorn`                                                                            |
-| **Data Sources** | `Amadeus Self-Service API` (Flight Offers & Cheapest Dates), `SerpApi` (Google Flights Scraper)                 |
-| **AI / LLM**     | `Groq API` (Llama 3)                                                                                         |
-| **Deployment**   | **Backend:** `Render` <br> **Frontend:** `Vercel`                                                             |
-| **Tooling**      | `Git`, `GitHub`, `Visual Studio Code`, `python-dotenv`                                                        |
+| Category | Technology |
+| --- | --- |
+| **Frontend** | `HTML5`, `CSS3`, `Vanilla JavaScript (ES6+)`, `Chart.js` |
+| **Backend** | `Python 3`, `FastAPI`, `Uvicorn` |
+| **Data Engine** | `SerpApi` (Google Flights Engine) |
+| **AI / LLM** | `Groq API` (`groq/compound`) |
+| **Deployment** | **Backend:** `Render` <br> **Frontend:** `Vercel` |
+| **Tooling** | `Git`, `GitHub`, `VS Code`, `python-dotenv` |
 
 ## Getting Started Locally
 
-To run this project on your local machine, follow these steps:
-
 ### 1. Prerequisites
 
--   Python 3.8+
--   A code editor (like VS Code) with a terminal
--   Git installed on your machine
+- Python 3.8+
+- Git installed on your system
+- A modern web browser
 
 ### 2. Clone the Repository
 
 ```bash
-git clone https://github.com/devanshmayatra/airline-market-demand-analyzer.git
+git clone [https://github.com/devanshmayatra/airline-market-demand-analyzer.git](https://github.com/devanshmayatra/airline-market-demand-analyzer.git)
 cd airline-market-demand-analyzer
 ```
 
 ### 3. Set Up the Backend
 
-1.  **Create and activate a Python virtual environment:**
-    ```bash
-    # For Mac/Linux
-    python3 -m venv venv
-    source venv/bin/activate
+1. **Create and activate a Python virtual environment:**
 
-    # For Windows
-    python -m venv venv
-    .\venv\Scripts\activate
-    ```
+   ```bash
+   # macOS / Linux
+   python3 -m venv venv
+   source venv/bin/activate
 
-2.  **Install the required dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
+   # Windows
+   python -m venv venv
+   .\venv\Scripts\activate
+   ```
 
-3.  **Set up environment variables:**
-    Create a file named `.env` in the root of the project directory. Copy the contents of `.env.example` (or the block below) into it and fill in your own API keys.
+2. **Install dependencies:**
 
-    ```
-    # .env file
-    AMADEUS_API_KEY="YOUR_AMADEUS_API_KEY"
-    AMADEUS_SECRET_KEY="YOUR_AMADEUS_SECRET_KEY"
-    GROQ_API_KEY="YOUR_GROQ_API_KEY"
-    SERPAPI_API_KEY="YOUR_SERPAPI_API_KEY"
-    ```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-4.  **Run the FastAPI server:**
-    ```bash
-    uvicorn main:app --reload
-    ```
-    The backend API will now be running at `http://127.0.0.1:8000`.
+3. **Configure environment variables:**
+
+   Create a `.env` file in the project root:
+
+   ```env
+   GROQ_API_KEY="your_groq_api_key"
+   SERPAPI_API_KEY="your_serpapi_api_key"
+   ```
+
+4. **Start the FastAPI server:**
+
+   ```bash
+   uvicorn main:app --reload --port 8001
+   ```
+
+   The backend API will be available at `http://127.0.0.1:8001`.
 
 ### 4. Run the Frontend
 
-1.  Open the `frontend` folder in your code editor.
-2.  The easiest way to serve the `index.html` file is with a live server extension. For example, the **Live Server** extension for VS Code.
-3.  Right-click on `index.html` and select "Open with Live Server".
-4.  The application will open in your browser, typically at `http://127.0.0.1:5500`.
+1. Ensure the `API_BASE_URL` in `script.js` points to your local server:
+   ```javascript
+   const API_BASE_URL = "[http://127.0.0.1:8001](http://127.0.0.1:8001)";
+   ```
+2. Serve the `index.html` file using VS Code **Live Server** or any static file server:
+   ```bash
+   # Optional: quick local server via Python
+   python -m http.server 5500
+   ```
+3. Open `http://127.0.0.1:5500` in your browser.
 
 ## Deployment
 
-The application follows a modern, decoupled architecture:
--   The **FastAPI backend** is deployed as a Web Service on **Render**. It automatically builds and deploys from the `main` branch upon each push. Environment variables are configured securely in the Render dashboard.
--   The **static frontend** is deployed on **Vercel**. It is configured to serve the contents of the `/frontend` directory and is automatically rebuilt and deployed upon each push to the `main` branch. The production API URL is hardcoded in the `script.js` file for Vercel's environment.
+- **Backend (Render):** Deployed as a web service running FastAPI via Uvicorn. Environment keys (`GROQ_API_KEY`, `SERPAPI_API_KEY`) are managed securely within Render's dashboard.
+- **Frontend (Vercel):** Deployed as an optimized static site. `API_BASE_URL` routes directly over HTTPS to the deployed Render service to prevent Private Network Access (PNA) security blocks.
 
-## Key Learnings
+## Key Technical Learnings
 
-This project served as an excellent exercise in real-world problem-solving:
-
--   **Graceful Degradation:** The initial Amadeus API for price trends was unreliable, returning `500` errors. The application was re-engineered to handle this failure gracefully, logging the error but proceeding with the available data rather than crashing.
--   **Handling AI Hallucinations:** When the web scraper initially returned no data, the AI would "hallucinate" a plausible-sounding report based on its persona. A guard clause was implemented on the frontend to prevent calling the AI with empty data, making the system more robust and reliable.
--   **Data Structure Adaptation:** The JSON structure from the web scraper was different from the API. This required creating a "translator" layer in the backend to normalize the data into a consistent format that the rest of the application could reliably consume.
+- **Payload Optimization (413 Prevention):** LLM context limits and rate limits triggered `413 Request Entity Too Large` errors when full multi-month flight trend arrays were transmitted. The backend pipeline was re-architected to trim and sample the flight trend data prior to LLM submission.
+- **Handling Hallucinations on Empty States:** If scrapers returned zero results for obscure dates, LLMs risked generating plausible-sounding but fictional offers. A frontend guard clause immediately bypasses the inference API and displays a clean fallback message when `offers.length === 0`.
+- **Markdown-to-DOM Normalization:** LLM outputs frequently alternate between raw asterisks, nested dashes, and inconsistent markdown tags. Implemented global JavaScript string tokenizers and regex sanitizers to cleanly convert nested Markdown into semantic `<ul><li>` structures and `<strong>` tags.
